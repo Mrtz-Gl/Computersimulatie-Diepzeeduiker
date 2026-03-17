@@ -43,13 +43,20 @@ equilibrium_state = systeem_model.find_equilibrium_state(
 )
 
 
+# =========================
 # Simulatie draaien vanaf equilibrium state
+# =========================
 result = systeem_model.run_simulation(
     time=60*10, # 10 minuten
-    inputs={"flux_O2_SC_weefsels": 0.35 / 60},
+    inputs={
+        "flux_O2_SC_weefsels": 0.35 / 60,
+        "breath_frequency": 20
+        },
     initial_state=equilibrium_state,
     relative_tolerance=1e-3,
 )
+# =========================
+
 
 # =========================
 # 1. Drukken, debiet, volume
