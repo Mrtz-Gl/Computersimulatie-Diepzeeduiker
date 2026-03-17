@@ -63,7 +63,12 @@ def partiele_druk_CO2_bij_inhoud(inhoud):
     """berekent de partiele druk van CO2 in bloed gegeven de totale inhoud CO2 in bloed"""
     return 0.837 * np.exp(4.16 * inhoud) - 0.895
 
+## stikstof berekening...
+def partiele_druk_N2_bloed(inputs, parameters):
+    """berekent de partiele druk van N2 in bloedplasma"""
+    return None
 
+## ...toevoegen stikstof aan functie
 def partiele_drukken_bloed(inputs, parameters):
     """Berekent de zuurstof-saturatie in de pulmonale capillairen"""
 
