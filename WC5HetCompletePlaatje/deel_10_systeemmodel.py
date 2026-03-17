@@ -13,8 +13,8 @@ from modellen.perfusie import perfusie_model
 systeem_model = Model(
     dynamics=[
         dynamic_elastance_model,
-        flux_alveoli_PC_model,
         luchtstromingen_model,
+        flux_alveoli_PC_model,
         gasstromingen_model,
         perfusie_model
     ]

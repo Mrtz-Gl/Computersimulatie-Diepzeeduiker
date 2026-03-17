@@ -25,7 +25,7 @@ inputs = {
 parameters_airflow = {
     "resistance_lungs"        : 3.0,  # [cmH2O/L]
 }
-
+   
 parameters_static_elastance = {
     "elastance_lungs"         : 2.7,  # [cmH2O/L]
     "elastance_thorax"        : 5.2,  # [cmH2O/L]
@@ -43,19 +43,6 @@ def elastic_pressure(volume, g):
 
 
 # run the state-space system
-def pressures_static_elastance(inputs, parameters):
-    """Calculates pressures for the lungs, thorax and alveoli"""
-
-    pressure_elastance_lungs  = parameters["elastance_lungs"]\
-                                * (inputs["volume_lungs"] - parameters["volume_rest_lungs"])
-    pressure_elastance_thorax = parameters["elastance_thorax"]\
-                                * (inputs["volume_lungs"] - parameters["volume_rest_thorax"])
-    pressure_alveoli          = pressure_elastance_lungs + pressure_elastance_thorax
-    return {"pressure_elastance_lungs": pressure_elastance_lungs,
-            "pressure_elastance_thorax": pressure_elastance_thorax,
-            "pressure_alveoli": pressure_alveoli}
-
-
 def pressures_dynamic_elastance(inputs, parameters):
     """Calculates pressures for the lungs, thorax and alveoli"""
 
@@ -74,33 +61,14 @@ def dynamics(inputs, parameters):
     return {"dvolume_lungs": flow}
 
 
-# Create models...
-# ...static...
-# ...static submodel
-static_elastance_pressure_model = Model(
-    dynamics=[pressures_static_elastance],
-    inputs=inputs,
-    parameters=parameters_static_elastance,
-)
-
-# ...static model
-static_elastance_model = Model(
-    dynamics=[static_elastance_pressure_model, dynamics],
-    state_components=["volume_lungs"],
-    inputs=inputs,
-    parameters=parameters_airflow,
-    initial_state={"volume_lungs": 3.5}
-)
-
-# ...dynamic...
-# ...dynamic submodel
+# dynamic submodel
 dynamic_elastance_pressure_model = Model(
     dynamics=[pressures_dynamic_elastance],
     inputs=inputs,
     parameters=parameters_static_elastance,
 )
 
-# ...dynamic model
+# dynamic model
 dynamic_elastance_model = Model(
     dynamics=[dynamic_elastance_pressure_model, dynamics],
     state_components=["volume_lungs"],
@@ -108,6 +76,7 @@ dynamic_elastance_model = Model(
     parameters=parameters_airflow,
     initial_state={"volume_lungs": 4.5}
 )
+
 
 if __name__ == "__main__":
 

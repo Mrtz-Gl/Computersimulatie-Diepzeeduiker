@@ -62,8 +62,8 @@ def pressures_dynamic_elastance(inputs, parameters):
             "pressure_elastance_LW": P_elastance_LW,
             "pressure_elastance_alveoli": P_elastance_alv,
             "pressure_elastance_thorax": P_elastance_TH,
-            "pressure_LW": P_LW,
-            "pressure_alveoli": P_alv
+            "druk_luchtwegen": P_LW,
+            "druk_alveoli": P_alv
             }
 
 
@@ -71,11 +71,11 @@ def dynamics(inputs, parameters):
     """Calculates flow (dV/dt) for the respiratory system"""
 
     # parameters
-    P_LW  = inputs["pressure_LW"]
+    P_LW  = inputs["druk_luchtwegen"]
     P_LWO = inputs["pressure_lungs"]
     Q_O2  = inputs["flux_O2_alveoli_PC"]
     Q_CO2 = inputs["flux_CO2_alveoli_PC"]
-    P_alv = inputs["pressure_alveoli"]
+    P_alv = inputs["druk_alveoli"]
     R_alv = parameters["resistance_alveoli"]
     R_LWO = parameters["resistance_LWO"]
 
@@ -126,8 +126,8 @@ if __name__ == "__main__":
     time = result.index
 
     P_LWO = result["pressure_lungs"]              # druk luchtwegopening (input)
-    P_LW  = result["pressure_LW"]                 # druk luchtwegen
-    P_alv = result["pressure_alveoli"]            # druk alveoli
+    P_LW  = result["druk_luchtwegen"]                 # druk luchtwegen
+    P_alv = result["druk_alveoli"]            # druk alveoli
 
     Q_LW  = result["flow_LW"]                     # debiet luchtwegen
     Q_alv = result["flow_alveoli"]                # debiet alveoli
