@@ -129,8 +129,8 @@ if __name__ == "__main__":
     P_LW  = result["druk_luchtwegen"]                 # druk luchtwegen
     P_alv = result["druk_alveoli"]            # druk alveoli
 
-    Q_LW  = result["flow_LW"]                     # debiet luchtwegen
-    Q_alv = result["flow_alveoli"]                # debiet alveoli
+    Q_LW  = result["debiet_luchtwegopening_luchtwegen"]                     # debiet luchtwegen
+    Q_alv = result["debiet_luchtwegen_alveoli"]                # debiet alveoli
 
     V_LW  = result["volume_luchtwegen"]                   # volume luchtwegen
     V_alv = result["volume_alveoli"]              # volume alveoli
