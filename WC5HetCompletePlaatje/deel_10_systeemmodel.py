@@ -11,7 +11,7 @@ from modellen.perfusie import perfusie_model                                    
 
 systeem_model = Model(
     dynamics=[
-        dynamic_elastance_pressure_model,   # dit nog wel vertalen naar Nederlands
+        dynamic_elastance_pressure_model, 
         flux_alveoli_PC_model,
         luchtstromingen_model,     
         gasstromingen_model,
