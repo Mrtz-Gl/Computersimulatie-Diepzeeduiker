@@ -22,8 +22,6 @@ def partiele_drukken_lucht(inputs):
     # definities
     druk_atm      = inputs["druk_atmosfeer"]
     omrekenfactor = parameters["omrekenfactor_cmH2O_kPA"]
-    fractie_O2  = inputs["fractie_O2_luchtwegen"]
-    fractie_CO2 = inputs["fractie_CO2_luchtwegen"]
 
     # bereken partiele drukken per compartiment
     partiele_drukken = {}
@@ -32,11 +30,13 @@ def partiele_drukken_lucht(inputs):
         relatieve_druk = inputs[f"druk_{compartiment}"]
         fractie_O2     = inputs[f"fractie_O2_{compartiment}"]
         fractie_CO2    = inputs[f"fractie_CO2_{compartiment}"]
+        fractie_N2     = inputs[f"fractie_N2_{compartiment}"]       ### Geen "fractie_N2_{compartiment}" in inputs
         P_abs_kPa      = (relatieve_druk + druk_atm) * omrekenfactor
 
         # voeg too aan partiele_drukken dict
         partiele_drukken[f"partiele_druk_O2_{compartiment}"]  = P_abs_kPa * fractie_O2
         partiele_drukken[f"partiele_druk_CO2_{compartiment}"] = P_abs_kPa * fractie_CO2
+        partiele_drukken[f"partiele_druk_N2_{compartiment}"]  = P_abs_kPa * fractie_N2
     return partiele_drukken
 
 
