@@ -43,68 +43,114 @@ equilibrium_state = systeem_model.find_equilibrium_state(
 )
 
 
+# Simulatie draaien vanaf equilibrium state
+result = systeem_model.run_simulation(
+    time=30,
+    initial_state=equilibrium_state,
+    relative_tolerance=1e-3,
+)
 
-result = systeem_model.result
-t = result["time"]
+# =========================
+# 1. Drukken, debiet, volume
+# =========================
+fig, axes = plt.subplots(3, 1, sharex=True, figsize=(10, 8))
 
-fig, ax = plt.subplots(3, 1, sharex=True)
+result[
+    [
+        "druk_alveoli",
+        "druk_luchtwegen",
+        "druk_thorax",
+    ]
+].plot(ax=axes[0])
+axes[0].set_ylabel("Druk")
+axes[0].set_title("Drukken")
 
-# drukken
-ax[0].plot(t, result["druk_alveoli"], label="Alveoli")
-ax[0].plot(t, result["druk_luchtwegen"], label="Luchtwegen")
-ax[0].set_ylabel("Druk")
-ax[0].legend()
+result[
+    [
+        "debiet_luchtwegen",
+    ]
+].plot(ax=axes[1])
+axes[1].set_ylabel("Debiet")
+axes[1].set_title("Debiet")
 
-# debiet
-ax[1].plot(t, result["debiet_luchtwegen"])
-ax[1].set_ylabel("Debiet")
+result[
+    [
+        "volume_lungs",
+    ]
+].plot(ax=axes[2])
+axes[2].set_ylabel("Volume")
+axes[2].set_xlabel("Tijd (s)")
+axes[2].set_title("Longvolume")
 
-# volume
-ax[2].plot(t, result["volume_lungs"])
-ax[2].set_ylabel("Volume")
-ax[2].set_xlabel("Tijd (s)")
-
+plt.tight_layout()
 plt.show()
 
 
-plt.figure()
+# ==========================================
+# 2. Partiële druk van zuurstof in alle compartimenten
+# ==========================================
+plt.figure(figsize=(10, 5))
 
-plt.plot(t, result["pO2_luchtwegen"], label="luchtwegen")
-plt.plot(t, result["pO2_alveoli"], label="alveoli")
-plt.plot(t, result["pO2_PC"], label="pulmonale capillairen")
-plt.plot(t, result["pO2_SA"], label="systemische arteriën")
-plt.plot(t, result["pO2_SC"], label="systemische capillairen")
-plt.plot(t, result["pO2_SV"], label="systemische venen")
+result[
+    [
+        "pO2_luchtwegen",
+        "pO2_alveoli",
+        "pO2_PC",
+        "pO2_SA",
+        "pO2_SC",
+        "pO2_SV",
+    ]
+].plot()
 
 plt.ylabel("pO2")
 plt.xlabel("Tijd (s)")
+plt.title("Partiële druk van zuurstof")
 plt.legend()
+plt.tight_layout()
 plt.show()
 
 
-plt.figure()
+# ==========================================
+# 3. Partiële druk van koolstofdioxide in alle compartimenten
+# ==========================================
+plt.figure(figsize=(10, 5))
 
-plt.plot(t, result["pCO2_luchtwegen"], label="luchtwegen")
-plt.plot(t, result["pCO2_alveoli"], label="alveoli")
-plt.plot(t, result["pCO2_PC"], label="pulmonale capillairen")
-plt.plot(t, result["pCO2_SA"], label="systemische arteriën")
-plt.plot(t, result["pCO2_SC"], label="systemische capillairen")
-plt.plot(t, result["pCO2_SV"], label="systemische venen")
+result[
+    [
+        "pCO2_luchtwegen",
+        "pCO2_alveoli",
+        "pCO2_PC",
+        "pCO2_SA",
+        "pCO2_SC",
+        "pCO2_SV",
+    ]
+].plot()
 
 plt.ylabel("pCO2")
 plt.xlabel("Tijd (s)")
+plt.title("Partiële druk van koolstofdioxide")
 plt.legend()
+plt.tight_layout()
 plt.show()
 
 
-plt.figure()
+# ==========================================
+# 4. O2-saturatie in alle bloedgevulde compartimenten
+# ==========================================
+plt.figure(figsize=(10, 5))
 
-plt.plot(t, result["saturatie_O2_PC"], label="PC")
-plt.plot(t, result["saturatie_O2_SA"], label="SA")
-plt.plot(t, result["saturatie_O2_SC"], label="SC")
-plt.plot(t, result["saturatie_O2_SV"], label="SV")
+result[
+    [
+        "saturatie_O2_PC",
+        "saturatie_O2_SA",
+        "saturatie_O2_SC",
+        "saturatie_O2_SV",
+    ]
+].plot()
 
-plt.ylabel("O2 saturatie")
+plt.ylabel("O2-saturatie")
 plt.xlabel("Tijd (s)")
+plt.title("Zuurstofsaturatie in bloedgevulde compartimenten")
 plt.legend()
+plt.tight_layout()
 plt.show()
