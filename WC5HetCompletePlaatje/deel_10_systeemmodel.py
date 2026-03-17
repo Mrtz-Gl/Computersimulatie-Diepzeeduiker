@@ -3,18 +3,17 @@ sys.path.append("\\Users\morit\OneDrive\Documents\KT\year 3\IC&CS\Werkcolleges C
 
 import matplotlib.pyplot as plt
 from physiomodeler import Model # type: ignore
-from modellen.elasticiteiten import dynamic_elastance_model
-from modellen.luchtstromingen import luchtstromingen_model
-from modellen.gasstromingen import gasstromingen_model
-from modellen.flux import flux_alveoli_PC_model
-from modellen.perfusie import perfusie_model
+from modellen.luchtstromingen import luchtstromingen_model, dynamic_elastance_pressure_model  # deel 5
+from modellen.gasstromingen import gasstromingen_model                                        # deel 6
+from modellen.flux import flux_alveoli_PC_model                                               # deel 9
+from modellen.perfusie import perfusie_model                                                  # deel 8
 
 
 systeem_model = Model(
     dynamics=[
-        dynamic_elastance_model,
-        luchtstromingen_model,
+        dynamic_elastance_pressure_model,   # dit nog wel vertalen naar Nederlands
         flux_alveoli_PC_model,
+        luchtstromingen_model,     
         gasstromingen_model,
         perfusie_model
     ]
@@ -26,7 +25,6 @@ duur_ademteug = (60 / luchtstromingen_model.inputs["breath_frequency"])
 equilibrium_state = systeem_model.find_equilibrium_state(
     period=duur_ademteug,
     estimated_equilibrium_state = {
-        "volume_lungs": 3.0,
         "fractie_O2_luchtwegen": 0.21,
         "fractie_CO2_luchtwegen": 0.0004,
         "fractie_O2_alveoli": 0.15,
