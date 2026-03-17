@@ -45,7 +45,8 @@ equilibrium_state = systeem_model.find_equilibrium_state(
 
 # Simulatie draaien vanaf equilibrium state
 result = systeem_model.run_simulation(
-    time=30,
+    time=60*10, # 10 minuten
+    inputs={"flux_O2_SC_weefsels": 0.35 / 60},
     initial_state=equilibrium_state,
     relative_tolerance=1e-3,
 )
@@ -67,42 +68,41 @@ axes[0].set_title("Drukken")
 
 result[
     [
-        "debiet_luchtwegen",
+        "debiet_luchtwegopening_luchtwegen",
+        "debiet_luchtwegen_alveoli",
     ]
 ].plot(ax=axes[1])
 axes[1].set_ylabel("Debiet")
-axes[1].set_title("Debiet")
+axes[1].set_title("Debieten")
 
 result[
     [
-        "volume_lungs",
+        "volume_luchtwegen",
+        "volume_alveoli",
     ]
 ].plot(ax=axes[2])
 axes[2].set_ylabel("Volume")
 axes[2].set_xlabel("Tijd (s)")
-axes[2].set_title("Longvolume")
+axes[2].set_title("Volumes")
 
 plt.tight_layout()
 plt.show()
 
 
-# ==========================================
-# 2. Partiële druk van zuurstof in alle compartimenten
-# ==========================================
+# =========================
+# 2. Partiële druk van O2 in alle compartimenten
+# =========================
 plt.figure(figsize=(10, 5))
 
 result[
     [
-        "pO2_luchtwegen",
-        "pO2_alveoli",
-        "pO2_PC",
-        "pO2_SA",
-        "pO2_SC",
-        "pO2_SV",
+        "partiele_druk_O2_luchtwegen",
+        "partiele_druk_O2_alveoli",
+        "partiele_druk_O2_PC",
     ]
 ].plot()
 
-plt.ylabel("pO2")
+plt.ylabel("Partiële druk O2")
 plt.xlabel("Tijd (s)")
 plt.title("Partiële druk van zuurstof")
 plt.legend()
@@ -110,23 +110,20 @@ plt.tight_layout()
 plt.show()
 
 
-# ==========================================
-# 3. Partiële druk van koolstofdioxide in alle compartimenten
-# ==========================================
+# =========================
+# 3. Partiële druk van CO2 in alle compartimenten
+# =========================
 plt.figure(figsize=(10, 5))
 
 result[
     [
-        "pCO2_luchtwegen",
-        "pCO2_alveoli",
-        "pCO2_PC",
-        "pCO2_SA",
-        "pCO2_SC",
-        "pCO2_SV",
+        "partiele_druk_CO2_luchtwegen",
+        "partiele_druk_CO2_alveoli",
+        "partiele_druk_CO2_PC",
     ]
 ].plot()
 
-plt.ylabel("pCO2")
+plt.ylabel("Partiële druk CO2")
 plt.xlabel("Tijd (s)")
 plt.title("Partiële druk van koolstofdioxide")
 plt.legend()
@@ -134,23 +131,20 @@ plt.tight_layout()
 plt.show()
 
 
-# ==========================================
+# =========================
 # 4. O2-saturatie in alle bloedgevulde compartimenten
-# ==========================================
+# =========================
 plt.figure(figsize=(10, 5))
 
 result[
     [
         "saturatie_O2_PC",
-        "saturatie_O2_SA",
-        "saturatie_O2_SC",
-        "saturatie_O2_SV",
     ]
 ].plot()
 
 plt.ylabel("O2-saturatie")
 plt.xlabel("Tijd (s)")
-plt.title("Zuurstofsaturatie in bloedgevulde compartimenten")
+plt.title("Zuurstofsaturatie")
 plt.legend()
 plt.tight_layout()
 plt.show()

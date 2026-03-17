@@ -61,7 +61,7 @@ def pressures_dynamic_elastance(inputs, parameters):
     return {
             "pressure_elastance_LW": P_elastance_LW,
             "pressure_elastance_alveoli": P_elastance_alv,
-            "pressure_elastance_thorax": P_elastance_TH,
+            "druk_thorax": P_elastance_TH,
             "druk_luchtwegen": P_LW,
             "druk_alveoli": P_alv
             }

@@ -30,6 +30,8 @@ def partiele_drukken_lucht(inputs):
 
     for compartiment in ["luchtwegen", "alveoli"]:
         relatieve_druk = inputs[f"druk_{compartiment}"]
+        fractie_O2     = inputs[f"fractie_O2_{compartiment}"]
+        fractie_CO2    = inputs[f"fractie_CO2_{compartiment}"]
         P_abs_kPa      = (relatieve_druk + druk_atm) * omrekenfactor
 
         # voeg too aan partiele_drukken dict
