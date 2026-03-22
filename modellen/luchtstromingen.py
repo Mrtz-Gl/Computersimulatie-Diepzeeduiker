@@ -75,6 +75,7 @@ def dynamics(inputs, parameters):
     P_LWO = inputs["pressure_lungs"]
     Q_O2  = inputs["flux_O2_alveoli_PC"]
     Q_CO2 = inputs["flux_CO2_alveoli_PC"]
+    Q_N2  = inputs["flux_N2_alveoli_PC"]  ##
     P_alv = inputs["druk_alveoli"]
     R_alv = parameters["resistance_alveoli"]
     R_LWO = parameters["resistance_LWO"]
@@ -82,7 +83,7 @@ def dynamics(inputs, parameters):
     # calculations
     Q_LW = (P_LWO - P_LW) / R_LWO
     Q_alv = (P_LW - P_alv) / R_alv
-    Q_tot = Q_O2 + Q_CO2
+    Q_tot = Q_O2 + Q_CO2 + Q_N2
     dV_LW = Q_LW - Q_alv
     dV_alv = Q_alv - Q_tot
     return {

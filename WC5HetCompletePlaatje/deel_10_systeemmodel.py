@@ -25,18 +25,24 @@ duur_ademteug = (60 / luchtstromingen_model.inputs["breath_frequency"])
 equilibrium_state = systeem_model.find_equilibrium_state(
     period=duur_ademteug,
     estimated_equilibrium_state = {
-        "fractie_O2_luchtwegen": 0.21,
-        "fractie_CO2_luchtwegen": 0.0004,
+        "fractie_N2_luchtwegen": 0.7097,     # 71% N2 in nitrox
+        "fractie_O2_luchtwegen": 0.2099,    # 29% O2 in nitrox
+        "fractie_CO2_luchtwegen": 0.04,     # 4% als trace in nitrox
         "fractie_O2_alveoli": 0.15,
-        "fractie_CO2_alveoli": 0.05,
+        "fractie_CO2_alveoli": 1.0 - 0.15 - 0.71,
+        "fractie_N2_alveoli": 0.71,
         "inhoud_O2_PC": 0.1987,
         "inhoud_CO2_PC": 0.5143,
+        "inhoud_N2_PC": 0.0096,
         "inhoud_O2_SA": 0.1987,
         "inhoud_CO2_SA": 0.5143,
+        "inhoud_N2_SA": 0.0096,
         "inhoud_O2_SC": 0.1531,
         "inhoud_CO2_SC": 0.5543,
+        "inhoud_N2_SC": 0.0096,
         "inhoud_O2_SV": 0.1531,
-        "inhoud_CO2_SV": 0.5543
+        "inhoud_CO2_SV": 0.5543,
+        "inhoud_N2_SV": 0.0096
         },
     relative_tolerance_simulation=1e-3,
     relative_tolerance_equilibrium=1e-2,

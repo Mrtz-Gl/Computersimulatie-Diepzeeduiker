@@ -6,8 +6,9 @@ import numpy as np
 
 # define the state-space system
 inputs = {
-    "fractie_O2_luchtwegopening": 0.1965,
-    "fractie_CO2_luchtwegopening": 0.0003
+    "fractie_O2_luchtwegopening": 0.21,
+    "fractie_CO2_luchtwegopening": 0.0003,
+    "fractie_N2_luchtwegopening": 1 - 0.21 - 0.003
 }
 
 # run the state-space system
@@ -67,8 +68,15 @@ gasstroming_CO2_model = Model(
     parameters={"gas": "CO2"}
 )
 
+gasstroming_N2_model = Model(
+    dynamics=dynamics,
+    state_components=["fractie_N2_alveoli", "fractie_N2_luchtwegen"],
+    inputs=inputs,
+    parameters={"gas": "N2"}
+)
+
 gasstromingen_model = Model(
-    dynamics=[gasstroming_O2_model, gasstroming_CO2_model],
+    dynamics=[gasstroming_O2_model, gasstroming_CO2_model, gasstroming_N2_model],
 )
 
 
