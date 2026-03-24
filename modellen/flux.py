@@ -4,9 +4,9 @@ import numpy as np
 
 
 def druk_atmosfeer_duiker(tijd):
-    """Druk bij opstijgen van 30m met 10 m/min."""
+    """Omgevingsdruk bij opstijgen van 30m met 10 m/min."""
     start_diepte = 30.0
-    stijg_stappen_m_p_min = 10.0
+    stijg_stappen_m_p_min = 10.0f
 
     diepte_m = max(0.0, start_diepte - stijg_stappen_m_p_min * (tijd / 60.0))
     atm_oppervlak_cmH2O = 1033.0
