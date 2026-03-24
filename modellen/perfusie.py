@@ -2,11 +2,13 @@ import matplotlib.pyplot as plt
 from physiomodeler import Model  # type: ignore
 
 parameters = {
-    "volume_PC": 0.1,   # [L]
-    "volume_SA": 1.1,   # [L]
-    "volume_SC": 0.3,   # [L]
-    "volume_SV": 3.5    # [L]
+    "volume_PC": 0.1,       # [L]
+    "volume_SA": 1.1,       # [L]
+    "volume_SC": 0.3,       # [L]
+    "volume_SV": 3.5,       # [L]
+    "volume_fat": 2.0       # [L]
 }
+
 
 inputs = {
     "debiet_CO": 5 / 60,
@@ -16,6 +18,7 @@ inputs = {
     "flux_O2_alveoli_PC": 0.25 / 60,
     "flux_CO2_alveoli_PC": -0.2 / 60,
     "flux_N2_alveoli_PC": 0.0,
+    "flux_N2_SC_fat": 0.0,
 }
 
 
@@ -37,6 +40,8 @@ def dynamics(inputs, state, parameters):
         dinhoud_a_b += inputs[f"flux_{gas}_alveoli_PC"] / V_b
     elif compartiment_b == "SC":
         dinhoud_a_b -= inputs[f"flux_{gas}_SC_weefsels"] / V_b
+    elif compartiment_b == "fat" and gas == "N2":
+        dinhoud_a_b -= inputs[f"flux_{gas}_SC_fat"] / V_b
 
     return {
         f"dinhoud_{gas}_{compartiment_b}": dinhoud_a_b
@@ -51,7 +56,7 @@ def event_inhoud_O2_negatief(state):
 event_inhoud_O2_negatief.terminal = True
 
 
-compartimenten = ["PC", "SA", "SC", "SV"]
+compartimenten = ["PC", "SA", "SC", "SV", "fat"]
 gassen = ["O2", "CO2", "N2"]
 
 concentratie_modellen = []
@@ -77,7 +82,7 @@ for i in range(len(compartimenten)):
 perfusie_model = Model(
     dynamics=concentratie_modellen,
     events=[event_inhoud_O2_negatief],
-    state_components=["inhoud_O2_PC", "inhoud_CO2_PC", "inhoud_N2_PC"],
+    state_components=["inhoud_O2_PC", "inhoud_CO2_PC", "inhoud_N2_PC", "inhoud_N2_fat"],
     parameters=parameters,
     inputs=inputs
 )
@@ -100,6 +105,7 @@ if __name__ == "__main__":
             "inhoud_N2_SA": 0.0096,
             "inhoud_N2_SC": 0.0096,
             "inhoud_N2_SV": 0.0096,
+            "inhoud_N2_fat": 0.0096,
         }
     )
 
@@ -126,5 +132,6 @@ if __name__ == "__main__":
             "inhoud_N2_SA",
             "inhoud_N2_SC",
             "inhoud_N2_SV",
+            "inhoud_N2_fat",
         ]
     ].plot(ax=axes[2])

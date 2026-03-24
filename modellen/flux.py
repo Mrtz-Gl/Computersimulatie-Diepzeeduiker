@@ -3,6 +3,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+def druk_atmosfeer_duiker(tijd):
+    """Druk bij opstijgen van 30m met 10 m/min."""
+    start_diepte = 30.0
+    stijg_stappen_m_p_min = 10.0
+
+    diepte_m = max(0.0, start_diepte - stijg_stappen_m_p_min * (tijd / 60.0))
+    atm_oppervlak_cmH2O = 1033.0
+    return (1.0 + diepte_m / 10.0) * atm_oppervlak_cmH2O
+
+
 inputs = {
     "druk_atmosfeer": 1033  # [cmH2O]
 }
@@ -15,7 +25,14 @@ parameters = {
     "diffusiecapaciteit_CO2": 0.025,            # [LCO2/(s*kPa)]
     "diffusiecapaciteit_N2": 0.03,              ## van stikstof
     "oplosbaarheid_N2_bloed": 1.2e-4,           # [LN2/(Lbloed*kPa)]
+    "oplosbaarheid_N2_vet": 0.5,                # [LN2/(Lvet*kPa)]
+    "diffusiecapaciteit_N2_vet": 0.01,          # [LN2/(s*kPa)]
 }
+
+
+########################
+### Flux berekenen
+########################
 
 
 def partiele_drukken_lucht(inputs):
@@ -93,6 +110,31 @@ def flux_alveoli_PC(inputs, parameters):
     return {f"flux_{gas}_alveoli_PC": flux}
 
 
+def flux_N2_SC_fat(inputs, parameters):
+    """Berekent N2 flux van systemische capillairen naar vetweefsel"""
+    
+    partiele_druk_N2_bloed = inputs["partiele_druk_N2_PC"]
+    inhoud_N2_fat = inputs["inhoud_N2_fat"]
+    oplosbaarheid_N2_vet = parameters["oplosbaarheid_N2_vet"]
+    diffusiecapaciteit = parameters["diffusiecapaciteit_N2_vet"]
+    
+    partiele_druk_N2_fat = inhoud_N2_fat / oplosbaarheid_N2_vet
+    flux = diffusiecapaciteit * (partiele_druk_N2_bloed - partiele_druk_N2_fat)
+    return {"flux_N2_SC_fat": flux}
+
+
+##########################################
+### Risico op decompressieziekte berekenen
+##########################################
+
+def dcs_risico(inputs, parameters):
+    """DCS-check: supersaturatie in vet."""
+    partiele_druk_N2_fat = inputs["inhoud_N2_fat"] / parameters["oplosbaarheid_N2_vet"]
+    partiele_druk_N2_bloed = inputs["partiele_druk_N2_PC"]
+    supersaturatie = partiele_druk_N2_fat / partiele_druk_N2_bloed
+    return {"dcs_risico": supersaturatie > 1.5}  # True als risico
+
+
 flux_O2_alveoli_PC_model = Model(
     dynamics=flux_alveoli_PC,
     parameters={"gas": "O2"},
@@ -108,6 +150,10 @@ flux_N2_alveoli_PC_model = Model(
     parameters={"gas": "N2"},
 )
 
+flux_N2_SC_fat_model = Model(
+    dynamics=flux_N2_SC_fat,
+)
+
 
 flux_alveoli_PC_model = Model(
     dynamics=[
@@ -116,6 +162,7 @@ flux_alveoli_PC_model = Model(
         flux_O2_alveoli_PC_model,
         flux_CO2_alveoli_PC_model,
         flux_N2_alveoli_PC_model,
+        flux_N2_SC_fat_model,
     ],
     parameters=parameters,
     inputs=inputs,
