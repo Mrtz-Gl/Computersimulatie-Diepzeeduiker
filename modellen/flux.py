@@ -23,10 +23,10 @@ parameters = {
     "concentratie_Hb": 150,                     # [LO2/Lbloed]
     "diffusiecapaciteit_O2": 0.0042,            # [LO2/(s*kPa)]
     "diffusiecapaciteit_CO2": 0.025,            # [LCO2/(s*kPa)]
-    "diffusiecapaciteit_N2": 0.03,              ## van stikstof
-    "oplosbaarheid_N2_bloed": 1.2e-4,           # [LN2/(Lbloed*kPa)]
-    "oplosbaarheid_N2_vet": 0.5,                # [LN2/(Lvet*kPa)]
-    "diffusiecapaciteit_N2_vet": 0.01,          # [LN2/(s*kPa)]
+    "diffusiecapaciteit_N2": 0.021,              ## van stikstof
+    "oplosbaarheid_N2_bloed": 6.4e-3 * 22.4,     # [LN2/(Lbloed*kPa)]
+    "oplosbaarheid_N2_vet": 5 * 6.4e-3 * 22.4,    # [LN2/(Lvet*kPa)]
+    "diffusiecapaciteit_N2_vet": 4.318e-9,          # [LN2/(s*kPa)]
 }
 
 
