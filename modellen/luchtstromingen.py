@@ -13,6 +13,7 @@ def input_pressure_as_squarewave(time, inputs):
     square_wave = square(time_cycle, duty=inputs["pressure_duty"])
     return ((square_wave + 1) / 2 * inputs["pressure_amplitude_lungs"] + inputs["PEEP"])
 
+
 inputs = {
     "pressure_lungs"          : input_pressure_as_squarewave,
     "pressure_amplitude_lungs": 5,    # [kPa]

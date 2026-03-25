@@ -6,7 +6,7 @@ parameters = {
     "volume_SA": 1.1,       # [L]
     "volume_SC": 0.3,       # [L]
     "volume_SV": 3.5,       # [L]
-    "volume_fat": 2.0       # [L]
+    "volume_vet": 22.0      # [L]
 }
 
 
@@ -17,8 +17,7 @@ inputs = {
     "flux_N2_SC_weefsels": 0.0,
     "flux_O2_alveoli_PC": 0.25 / 60,
     "flux_CO2_alveoli_PC": -0.2 / 60,
-    "flux_N2_alveoli_PC": 0.0,
-    "flux_N2_SC_fat": 0.0,
+    "flux_N2_alveoli_PC": 0.2 / 60,
 }
 
 
@@ -40,11 +39,20 @@ def dynamics(inputs, state, parameters):
         dinhoud_a_b += inputs[f"flux_{gas}_alveoli_PC"] / V_b
     elif compartiment_b == "SC":
         dinhoud_a_b -= inputs[f"flux_{gas}_SC_weefsels"] / V_b
-    elif compartiment_b == "fat" and gas == "N2":
-        dinhoud_a_b -= inputs[f"flux_{gas}_SC_fat"] / V_b
 
     return {
         f"dinhoud_{gas}_{compartiment_b}": dinhoud_a_b
+    }
+
+
+def N2_inhoud_vet(inputs, parameters):
+    """Berekent de inhoud van N2 in het vetweefsel"""
+    V_vet = parameters["volume_vet"]
+
+    d_inhoud_N2_vet = inputs["flux_N2_SC_vet"] / V_vet
+
+    return {
+        "dinhoud_N2_vet": d_inhoud_N2_vet
     }
 
 
@@ -56,7 +64,7 @@ def event_inhoud_O2_negatief(state):
 event_inhoud_O2_negatief.terminal = True
 
 
-compartimenten = ["PC", "SA", "SC", "SV", "fat"]
+compartimenten = ["PC", "SA", "SC", "SV"]
 gassen = ["O2", "CO2", "N2"]
 
 concentratie_modellen = []
@@ -78,60 +86,12 @@ for i in range(len(compartimenten)):
 
         concentratie_modellen.append(concentratie_model)
 
-
 perfusie_model = Model(
-    dynamics=concentratie_modellen,
+dynamics=[*concentratie_modellen, N2_inhoud_vet], #  dynamics=[*concentratie_modellen, N2_inhoud_vet],
     events=[event_inhoud_O2_negatief],
-    state_components=["inhoud_O2_PC", "inhoud_CO2_PC", "inhoud_N2_PC", "inhoud_N2_fat"],
+    state_components=["inhoud_O2_PC", "inhoud_CO2_PC", "inhoud_N2_PC", "inhoud_N2_vet"],
     parameters=parameters,
     inputs=inputs
 )
 
 
-if __name__ == "__main__":
-
-    result = perfusie_model.run_simulation(
-        time=60,
-        initial_state={
-            "inhoud_O2_PC": 0.005,
-            "inhoud_O2_SA": 0.005,
-            "inhoud_O2_SC": 0.0006,
-            "inhoud_O2_SV": 0.0006,
-            "inhoud_CO2_PC": 0.02,
-            "inhoud_CO2_SA": 0.03,
-            "inhoud_CO2_SC": 0.07,
-            "inhoud_CO2_SV": 0.08,
-            "inhoud_N2_PC": 0.0096,
-            "inhoud_N2_SA": 0.0096,
-            "inhoud_N2_SC": 0.0096,
-            "inhoud_N2_SV": 0.0096,
-            "inhoud_N2_fat": 0.0096,
-        }
-    )
-
-    fig, axes = plt.subplots(1, 3, sharey=True)
-    result[
-        [
-            "inhoud_O2_PC",
-            "inhoud_O2_SA",
-            "inhoud_O2_SC",
-            "inhoud_O2_SV",
-        ]
-    ].plot(ax=axes[0])
-    result[
-        [
-            "inhoud_CO2_PC",
-            "inhoud_CO2_SA",
-            "inhoud_CO2_SC",
-            "inhoud_CO2_SV",
-        ]
-    ].plot(ax=axes[1])
-    result[
-        [
-            "inhoud_N2_PC",
-            "inhoud_N2_SA",
-            "inhoud_N2_SC",
-            "inhoud_N2_SV",
-            "inhoud_N2_fat",
-        ]
-    ].plot(ax=axes[2])

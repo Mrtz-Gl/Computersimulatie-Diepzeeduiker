@@ -3,30 +3,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def druk_atmosfeer_duiker(tijd):
-    """Druk bij opstijgen van 30m met 10 m/min."""
-    start_diepte = 30.0
-    stijg_stappen_m_p_min = 10.0
-
-    diepte_m = max(0.0, start_diepte - stijg_stappen_m_p_min * (tijd / 60.0))
-    atm_oppervlak_cmH2O = 1033.0
-    return (1.0 + diepte_m / 10.0) * atm_oppervlak_cmH2O
-
-
-inputs = {
-    "druk_atmosfeer": 1033  # [cmH2O]
-}
-
 parameters = {
     "omrekenfactor_cmH2O_kPA": 0.0981,          # [kPa/cmH2O]
     "bindingscapaciteit_Hb": 1.35e-3,           # [LO2/gHb]
     "concentratie_Hb": 150,                     # [LO2/Lbloed]
     "diffusiecapaciteit_O2": 0.0042,            # [LO2/(s*kPa)]
     "diffusiecapaciteit_CO2": 0.025,            # [LCO2/(s*kPa)]
-    "diffusiecapaciteit_N2": 0.03,              ## van stikstof
-    "oplosbaarheid_N2_bloed": 1.2e-4,           # [LN2/(Lbloed*kPa)]
-    "oplosbaarheid_N2_vet": 0.5,                # [LN2/(Lvet*kPa)]
-    "diffusiecapaciteit_N2_vet": 0.01,          # [LN2/(s*kPa)]
+    "diffusiecapaciteit_N2": 0.0021,              ## van stikstof
+    "oplosbaarheid_N2_bloed": 6.4e-6 * 25.4,    # [LN2/(Lbloed*kPa)]
+    "oplosbaarheid_N2_vet": 5 * 6.4e-6 * 25.4,  # [LN2/(Lvet*kPa)]
+    "diffusiecapaciteit_N2_vet": 4.318e-9,          # [LN2/(s*kPa)]
+    "valversnelling": 9.81,                      # [m/s^2]
+    "P_atmosfeer": 101.0,  # [kPa]
+    "rho_zeewater": 1025.0,  # [kg/m^3]
 }
 
 
@@ -34,12 +23,11 @@ parameters = {
 ### Flux berekenen
 ########################
 
-
 def partiele_drukken_lucht(inputs):
     """Berekent de partiele druk in de alveoli en luchtwegen in kPA"""
 
     # definities
-    druk_atm = inputs["druk_atmosfeer"]
+    druk_omgeving = parameters["P_atmosfeer"] + (parameters["rho_zeewater"] * parameters["valversnelling"] * inputs["diepte"]) / 1000.0
     omrekenfactor = parameters["omrekenfactor_cmH2O_kPA"]
 
     # bereken partiele drukken per compartiment
@@ -50,7 +38,7 @@ def partiele_drukken_lucht(inputs):
         fractie_O2 = inputs[f"fractie_O2_{compartiment}"]
         fractie_CO2 = inputs[f"fractie_CO2_{compartiment}"]
         fractie_N2 = inputs[f"fractie_N2_{compartiment}"]
-        P_abs_kPa = (relatieve_druk + druk_atm) * omrekenfactor
+        P_abs_kPa = relatieve_druk * omrekenfactor + druk_omgeving
 
         partiele_drukken[f"partiele_druk_O2_{compartiment}"] = P_abs_kPa * fractie_O2
         partiele_drukken[f"partiele_druk_CO2_{compartiment}"] = P_abs_kPa * fractie_CO2
@@ -88,14 +76,21 @@ def partiele_drukken_bloed(inputs, parameters):
     inhoud_CO2 = inputs["inhoud_CO2_PC"]
 
     # N2
-    inhoud_N2 = inputs["inhoud_N2_PC"]
+    inhoud_N2_PC = inputs["inhoud_N2_PC"]
+    inhoud_N2_SC = inputs["inhoud_N2_SC"]
     oplosbaarheid_N2 = parameters["oplosbaarheid_N2_bloed"]
     return {
         "saturatie_O2_PC": S_O2,
         "partiele_druk_O2_PC": partiele_druk_O2_bij_saturatie(S_O2),
         "partiele_druk_CO2_PC": partiele_druk_CO2_bij_inhoud(inhoud_CO2),
-        "partiele_druk_N2_PC": inhoud_N2 / oplosbaarheid_N2,
+        "partiele_druk_N2_SC": inhoud_N2_SC / oplosbaarheid_N2,                             # vergelijking 3
+        "partiele_druk_N2_PC": inhoud_N2_PC / oplosbaarheid_N2,                             # vergelijking 3             
     }
+
+def partiele_druk_vet(inputs, parameters):
+    inhoud_N2_vet = inputs["inhoud_N2_vet"]
+    oplosbaarheid_N2_vet = parameters["oplosbaarheid_N2_vet"]
+    return {"partiele_druk_N2_vet": inhoud_N2_vet / oplosbaarheid_N2_vet}
 
 
 def flux_alveoli_PC(inputs, parameters):
@@ -110,29 +105,15 @@ def flux_alveoli_PC(inputs, parameters):
     return {f"flux_{gas}_alveoli_PC": flux}
 
 
-def flux_N2_SC_fat(inputs, parameters):
-    """Berekent N2 flux van systemische capillairen naar vetweefsel"""
-    
-    partiele_druk_N2_bloed = inputs["partiele_druk_N2_PC"]
-    inhoud_N2_fat = inputs["inhoud_N2_fat"]
-    oplosbaarheid_N2_vet = parameters["oplosbaarheid_N2_vet"]
-    diffusiecapaciteit = parameters["diffusiecapaciteit_N2_vet"]
-    
-    partiele_druk_N2_fat = inhoud_N2_fat / oplosbaarheid_N2_vet
-    flux = diffusiecapaciteit * (partiele_druk_N2_bloed - partiele_druk_N2_fat)
-    return {"flux_N2_SC_fat": flux}
+def flux_N2_SC_vet(inputs, parameters):
+     "Berekent N2 flux van systemische capillairen naar vetweefsel"
+     
+     partiele_druk_N2_bloed = inputs["partiele_druk_N2_SC"]
+     partiele_druk_N2_vet   = partiele_druk_vet(inputs, parameters)["partiele_druk_N2_vet"]
+     diffusiecapaciteit     = parameters["diffusiecapaciteit_N2_vet"]
 
-
-##########################################
-### Risico op decompressieziekte berekenen
-##########################################
-
-def dcs_risico(inputs, parameters):
-    """DCS-check: supersaturatie in vet."""
-    partiele_druk_N2_fat = inputs["inhoud_N2_fat"] / parameters["oplosbaarheid_N2_vet"]
-    partiele_druk_N2_bloed = inputs["partiele_druk_N2_PC"]
-    supersaturatie = partiele_druk_N2_fat / partiele_druk_N2_bloed
-    return {"dcs_risico": supersaturatie > 1.5}  # True als risico
+     flux = diffusiecapaciteit * (partiele_druk_N2_bloed - partiele_druk_N2_vet)
+     return {"flux_N2_SC_vet": flux}
 
 
 flux_O2_alveoli_PC_model = Model(
@@ -150,9 +131,12 @@ flux_N2_alveoli_PC_model = Model(
     parameters={"gas": "N2"},
 )
 
-flux_N2_SC_fat_model = Model(
-    dynamics=flux_N2_SC_fat,
-)
+flux_N2_SC_vet_model = Model(
+     dynamics=[
+         flux_N2_SC_vet, 
+         partiele_druk_vet
+         ]
+ )
 
 
 flux_alveoli_PC_model = Model(
@@ -162,37 +146,10 @@ flux_alveoli_PC_model = Model(
         flux_O2_alveoli_PC_model,
         flux_CO2_alveoli_PC_model,
         flux_N2_alveoli_PC_model,
-        flux_N2_SC_fat_model,
+        flux_N2_SC_vet_model,
     ],
     parameters=parameters,
-    inputs=inputs,
 )
 
 
-if __name__ == "__main__":
 
-    result = flux_alveoli_PC_model.run_simulation(
-        time=10,
-        inputs={
-            "druk_alveoli": 0,
-            "druk_luchtwegen": 0,
-            "fractie_O2_alveoli": 0.15,
-            "fractie_CO2_alveoli": 1.0 - 0.15 - 0.7097,
-            "fractie_N2_alveoli": 0.7097,
-            "fractie_N2_luchtwegen": 0.7097,     # 71% N2 in nitrox
-            "fractie_O2_luchtwegen": 0.2099,     # 29% O2 in nitrox
-            "fractie_CO2_luchtwegen": 0.04,      # 4% als trace in nitrox
-            "inhoud_O2_PC": 0.1987,
-            "inhoud_CO2_PC": 0.5143,
-            "inhoud_N2_PC": 0.0096,
-            "inhoud_O2_SA": 0.1987,
-            "inhoud_CO2_SA": 0.5143,
-            "inhoud_N2_SA": 0.0096,
-            "inhoud_O2_SC": 0.1531,
-            "inhoud_CO2_SC": 0.5543,
-            "inhoud_N2_SC": 0.0096,
-            "inhoud_O2_SV": 0.1531,
-            "inhoud_CO2_SV": 0.5543,
-            "inhoud_N2_SV": 0.0096,
-        },
-    )
